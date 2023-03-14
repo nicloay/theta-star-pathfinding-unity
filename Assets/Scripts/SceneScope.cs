@@ -16,6 +16,7 @@ public class SceneScope : LifetimeScope
 
         InjectToComponents<ResolutionToScaleCtrl>(builder);
         InjectToComponents<MaterialTextureUpdateCtrl>(builder);
+        InjectToComponents<PathRenderController>(builder);
         base.Configure(builder);
     }
     

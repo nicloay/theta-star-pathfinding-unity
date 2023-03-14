@@ -41,22 +41,33 @@ namespace Modules.MapGenerator
             return noiseMap;
         }
 
-        private static readonly Color32 COLOR_PASS = Color.black;
-        private static readonly Color32 COLOR_BLOCK = Color.white;
+        private static readonly Color32 COLOR_PASS = Color.gray;
+        private static readonly Color32 COLOR_BLOCK = Color.black;
         
         public Texture2D GetTexture()
         {
-            var result = new Texture2D(Width, Height, TextureFormat.R8, false);
+            var result = new Texture2D(Width, Height, TextureFormat.RGBA32, false);
             var pixels = new Color32[Width * Height];
             var i = 0;
             for (var y = 0; y < Height; y++)
             for (var x = 0; x < Width; x++)
             {
-                pixels[i++] = Map[x, y] ? COLOR_BLOCK : COLOR_PASS;
+                pixels[i++] = Map[x, y] ? COLOR_PASS : COLOR_BLOCK;
             }
+
+            pixels[0] = Color.red;
+            pixels[1] = Color.red;
+            pixels[2] = Color.red;
+            pixels[3] = Color.red;
+            
+            pixels[0+Width] = Color.red;
+            pixels[1+Width] = Color.red;
+            pixels[2+Width] = Color.red;
+            pixels[3+Width] = Color.red;
+            
             
             result.SetPixels32(pixels);
-            result.Apply(false, true);
+            result.Apply(false, false);
             return result;
         }
     }
