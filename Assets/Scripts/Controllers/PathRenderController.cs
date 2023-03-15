@@ -1,3 +1,4 @@
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using JetBrains.Annotations;
@@ -5,10 +6,12 @@ using Modules.MapGenerator;
 using Pathfinding;
 using Services;
 using UnityEngine;
+using UnityEngine.UI;
 using VContainer;
 
 namespace Controllers
 {
+    [RequireComponent(typeof(LineRenderer))]
     public class PathRenderController : MonoBehaviour
     {
         private readonly Vector2Int[] _screenPositions = new Vector2Int[3];
@@ -16,9 +19,11 @@ namespace Controllers
         private int _currentPosition = -1;
         [Inject] [UsedImplicitly] private MapGenerator _mapGenerator;
         private ThetaStar _pathFinder;
-
+        private LineRenderer _lineRenderer;
+        
         private void Awake()
         {
+            _lineRenderer = GetComponent<LineRenderer>();
             _camera = Camera.main;
             _mapGenerator.RawMapData.ForEachAsync(SyncPathFinding, this.GetCancellationTokenOnDestroy());
         }
@@ -64,7 +69,13 @@ namespace Controllers
             {
                 Debug.LogWarning("Can't find the path");
             }
-            
+
+            _lineRenderer.positionCount = path.Count;
+            _lineRenderer.widthMultiplier = 0.1f;
+            _lineRenderer.SetPositions(path.Select(i => _camera.ScreenToWorldPoint(new Vector3(i.x, i.y, 5f))).ToArray());
+                
+            return;
+                
             for (int i = 0, next = 1; next < path.Count; i = next++)
             {
                 var from = new Vector3(path[i].x, path[i].y, 5);
