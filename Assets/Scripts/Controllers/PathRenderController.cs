@@ -2,7 +2,9 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using JetBrains.Annotations;
+using MapGenerator.MapData;
 using Modules.MapGenerator;
+using Modules.MapGenerator.MapData;
 using Pathfinding;
 using Services;
 using UnityEngine;
@@ -17,7 +19,7 @@ namespace Controllers
         private readonly Vector2Int[] _screenPositions = new Vector2Int[3];
         private Camera _camera;
         private int _currentPosition = -1;
-        [Inject] [UsedImplicitly] private MapGenerator _mapGenerator;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IMapData> _mapData;
         private ThetaStar _pathFinder;
         private LineRenderer _lineRenderer;
         
@@ -25,7 +27,7 @@ namespace Controllers
         {
             _lineRenderer = GetComponent<LineRenderer>();
             _camera = Camera.main;
-            _mapGenerator.RawMapData.ForEachAsync(SyncPathFinding, this.GetCancellationTokenOnDestroy());
+            _mapData.ForEachAsync(SyncPathFinding, this.GetCancellationTokenOnDestroy());
         }
 
         private void Update()
@@ -52,13 +54,10 @@ namespace Controllers
             }
         }
 
-        private void SyncPathFinding(RawMapData arg)
+        private void SyncPathFinding(IMapData mapData)
         {
-            if (arg?.Map == null)
-            {
-                return;
-            }
-            _pathFinder = new ThetaStar(arg.Map);
+            if (mapData is not RawMapData data) return;
+            _pathFinder = new ThetaStar(data.Map);
             _currentPosition = -1;
         }
 
@@ -73,15 +72,6 @@ namespace Controllers
             _lineRenderer.positionCount = path.Count;
             _lineRenderer.widthMultiplier = 0.1f;
             _lineRenderer.SetPositions(path.Select(i => _camera.ScreenToWorldPoint(new Vector3(i.x, i.y, 5f))).ToArray());
-                
-            return;
-                
-            for (int i = 0, next = 1; next < path.Count; i = next++)
-            {
-                var from = new Vector3(path[i].x, path[i].y, 5);
-                var to = new Vector3(path[next].x, path[next].y, 5);
-                Debug.DrawLine(_camera.ScreenToWorldPoint(from), _camera.ScreenToWorldPoint(to), Color.green, 20.0f);
-            }
         }
 
         private void OnDrawGizmos()

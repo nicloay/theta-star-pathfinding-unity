@@ -2,20 +2,45 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Modules.MapGenerator;
+using Modules.MapGenerator.MapData;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Utils
 {
     public static class BindingExtensions
     {
-        public static void BindMapDataToMainTex(this IUniTaskAsyncEnumerable<RawMapData> source, Renderer target,
+        
+        public static void BindToSize(this IUniTaskAsyncEnumerable<float> source, Scrollbar scrollbar,
             CancellationToken cancellationToken, bool rebindOnError = true)
         {
-            void Setter(RawMapData value)
+            void Setter(float value)
             {
-                if (value != null)
+                scrollbar.size = value;
+            }
+
+            BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
+        }
+        
+        public static void BindToActivity(this IUniTaskAsyncEnumerable<bool> source, GameObject gameObject,
+            CancellationToken cancellationToken, bool rebindOnError = true)
+        {
+            void Setter(bool value)
+            {
+                gameObject.SetActive(value);
+            }
+
+            BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
+        }
+        
+        public static void BindMapDataToMainTex(this IUniTaskAsyncEnumerable<IMapData> source, Renderer target,
+            CancellationToken cancellationToken, bool rebindOnError = true)
+        {
+            void Setter(IMapData value)
+            {
+                if (value is RawMapData data)
                 {
-                    target.material.mainTexture = value.GetTexture();
+                    target.material.mainTexture = data.GetTexture();
                 }
             }
 

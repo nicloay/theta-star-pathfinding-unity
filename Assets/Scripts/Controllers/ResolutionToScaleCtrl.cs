@@ -9,11 +9,10 @@ namespace Controllers
 {
     public class ResolutionToScaleCtrl : MonoBehaviour
     {
-        [Inject]
-        [UsedImplicitly]
-        private void InjectResolution(ScreenSizeMonitor monitor)
+        [Inject] [UsedImplicitly]
+        private void InjectResolution(IAsyncReactiveProperty<Resolution> resolution)
         {
-            monitor.Resolution.BindToScale(transform, this.GetCancellationTokenOnDestroy());
+            resolution.BindToScale(transform, this.GetCancellationTokenOnDestroy());
         }
     }
 }

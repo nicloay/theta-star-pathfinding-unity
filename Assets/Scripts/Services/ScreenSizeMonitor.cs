@@ -1,44 +1,64 @@
+using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using JetBrains.Annotations;
 using UnityEngine;
+using VContainer;
 using VContainer.Unity;
 
 namespace Services
 {
     [UsedImplicitly]
-    public class ScreenSizeMonitor : IStartable, ITickable
+    public class ScreenSizeMonitor : IStartable, ITickable, IDisposable
     {
-        private readonly AsyncReactiveProperty<Resolution> _resolutionRP = new(Screen.currentResolution);
-        private int _height;
-        private int _width;
-
-        public ScreenSizeMonitor()
-        {
-            UpdateResolution();
-        }
-
-        public IReadOnlyAsyncReactiveProperty<Resolution> Resolution => _resolutionRP;
+        private const int DEBOUNCING_TIMEOUT_MS = 500;
+        [Inject] [UsedImplicitly] private readonly IAsyncReactiveProperty<Resolution> _resolution;
+        private int _previousHeight;
+        private int _previousWidth;
 
         public void Start()
         {
-            UpdateResolution();
+            _previousHeight = Screen.height;
+            _previousWidth = Screen.width;
+            SetWidthHeight();
         }
 
+        private CancellationTokenSource _ctx;
         public void Tick()
         {
-            UpdateResolution();
+            if (Screen.width == _previousWidth &&
+                Screen.height == _previousHeight) return;
+            
+            _previousWidth = Screen.width;
+            _previousHeight = Screen.height;
+            
+            _ctx?.Cancel();
+            _ctx = new CancellationTokenSource();
+            UpdateWithDelay(_ctx.Token).Forget();
         }
 
-        private void UpdateResolution()
+        private async UniTaskVoid UpdateWithDelay(CancellationToken token)
         {
-            if (Screen.width == _width &&
-                Screen.height == _height) return;
-            _width = Screen.width;
-            _height = Screen.height;
-            _resolutionRP.Value = new Resolution
+            await UniTask.Delay(DEBOUNCING_TIMEOUT_MS, cancellationToken:token);
+            if (token.IsCancellationRequested)
             {
-                width = _width, height = _height
+                return;
+            }
+            SetWidthHeight();
+            _ctx = null;
+        }
+
+        private void SetWidthHeight()
+        {
+            _resolution.Value = new Resolution
+            {
+                width = _previousWidth, height = _previousHeight
             };
+        }
+
+        public void Dispose()
+        {
+            _ctx?.Dispose();
         }
     }
 }
