@@ -31,6 +31,7 @@ public class SceneScope : LifetimeScope
         InjectToComponents<MaterialTextureUpdateCtrl>(builder);
         InjectToComponents<PathRenderController>(builder);
         InjectToComponents<MapGenerationUICtrl>(builder);
+        InjectToComponents<PathfindingUICtrl>(builder);
     }
 
     

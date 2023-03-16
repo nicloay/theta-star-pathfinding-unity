@@ -32,6 +32,11 @@ namespace Services
             _resolution.ForEachAwaitAsync(async resolution => RegenerateMap(resolution), _selfTokenSource.Token);
         }
 
+        public void RegenerateCurrentMap()
+        {
+            RegenerateMap(_resolution.Value);
+        }
+        
         private void  RegenerateMap(Resolution resolution)
         {
             if (mapGeneratorCTX != null)
@@ -48,7 +53,7 @@ namespace Services
             _gameState.Value = GameState.MagGeneration;
             
             _rawMapData.Value = await RawMapData.Create(width, height, _progress, mapGeneratorCTX.Token);
-            await UniTask.Delay(500, cancellationToken: token);
+            await UniTask.Delay(100, cancellationToken: token);
             _gameState.Value = token.IsCancellationRequested ? GameState.Unknown : GameState.PathFinding;
             mapGeneratorCTX = null;
         }
