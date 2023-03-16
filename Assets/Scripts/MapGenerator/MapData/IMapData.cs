@@ -1,4 +1,4 @@
-﻿namespace Modules.MapGenerator.MapData
+﻿namespace MapGenerator.MapData
 {
     public interface IMapData
     {

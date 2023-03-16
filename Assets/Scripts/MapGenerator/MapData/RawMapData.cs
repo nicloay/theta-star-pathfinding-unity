@@ -1,11 +1,11 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Modules.MapGenerator.MapData;
+using MapGenerator.Utils;
 using UnityEngine;
 using Random = System.Random;
 
-namespace Modules.MapGenerator
+namespace MapGenerator.MapData
 {
     // we don't want to use BitArray, as we will access array often. so sacrifice space and single bool take 1 byte (not bit)
     public class RawMapData : IMapData

@@ -1,5 +1,4 @@
-﻿using System;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using JetBrains.Annotations;
 using Services;
@@ -9,7 +8,7 @@ using UnityEngine.UI;
 using Utils;
 using VContainer;
 
-namespace UI
+namespace Controllers.UI
 {
     public class MapGenerationUICtrl : MonoBehaviour
     {

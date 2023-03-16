@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks.Linq;
 using JetBrains.Annotations;
 using MapGenerator.MapData;
 using Modules.MapGenerator;
-using Modules.MapGenerator.MapData;
 using Pathfinding;
 using Services;
 using UnityEngine;
