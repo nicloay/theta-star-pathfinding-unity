@@ -28,7 +28,7 @@ namespace Controllers
 
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IMapData> _mapData;
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
-        private ThetaStar _pathFinder;
+        private ThetaStarOptimised _pathFinder;
 
 
         private Vector2Int _startingPoint;
@@ -109,6 +109,7 @@ namespace Controllers
                     pathEndObject.SetActive(true);
                     pathEndObject.transform.position = GetGlobalPosition(_endPoint);
                     var path = _pathFinder.CalculatePath(_startingPoint, _endPoint);
+                    //Debug.Break();
                     if (path == null || path.Count == 0)
                     {
                         _mapErrorPublisher.Publish(new MapError(MapError.ErrorType.PathNotFound));
@@ -126,7 +127,7 @@ namespace Controllers
         private UniTask UpdatePathFinding(IMapData mapData)
         {
             if (mapData is not RawMapData data) return UniTask.CompletedTask;
-            _pathFinder = new ThetaStar(data.Map);
+            _pathFinder = new ThetaStarOptimised(data.Map);
             SetNextStatus(Status.Pending);
             return UniTask.CompletedTask;
         }
