@@ -2,6 +2,8 @@ using Controllers;
 using Controllers.UI;
 using Cysharp.Threading.Tasks;
 using MapGenerator.MapData;
+using MessagePipe;
+using Messages;
 using Services;
 using UnityEngine;
 using Utils;
@@ -13,15 +15,20 @@ public class SceneScope : LifetimeScope
     protected override void Configure(IContainerBuilder builder)
     {
         RegisterReactiveProperties(builder);
-        
         RegisterEntryPoints(builder);
-        
         InjectToComponentsOnScene(builder);
-        
+        RegisterMessagePipe(builder);
         
         builder.RegisterInstance(new LevelGenerationProgress());
         
         base.Configure(builder);
+    }
+
+    private void RegisterMessagePipe(IContainerBuilder builder)
+    {
+        var options = builder.RegisterMessagePipe();
+        builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProvider()));
+        builder.RegisterMessageBroker<MapError>(options);
     }
 
     // components which are only receive injections, You can not inject these types to another consumers
@@ -32,6 +39,7 @@ public class SceneScope : LifetimeScope
         InjectToComponents<PathRenderController>(builder);
         InjectToComponents<MapGenerationUICtrl>(builder);
         InjectToComponents<PathfindingUICtrl>(builder);
+        InjectToComponents<ErrorHandlerUICtrl>(builder);
     }
 
     

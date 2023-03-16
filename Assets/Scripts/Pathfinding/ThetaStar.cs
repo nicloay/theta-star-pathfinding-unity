@@ -31,6 +31,7 @@ namespace Pathfinding
             _closedQueue = new HashSet<Vector2Int>();
         }
 
+        public bool IsPassable(Vector2Int position) => _map[position.x, position.y];
 
         private void ResetCache()
         {
