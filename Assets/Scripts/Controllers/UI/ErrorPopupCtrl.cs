@@ -37,8 +37,8 @@ namespace Controllers.UI
         {
             _canvasGroup.alpha = 1.0f;
             text.text = error;
-            transform.localPosition = Vector3.zero;
-            transform.localScale = Vector3.one;
+            _rectTransform.localPosition = Vector3.zero;
+            _rectTransform.localScale = Vector3.one;
             var sequence = DOTween.Sequence()
                 .Append(_rectTransform.DOLocalMove(offset, DURATION))
                 .Join(_rectTransform.DOScale(scale, DURATION))
