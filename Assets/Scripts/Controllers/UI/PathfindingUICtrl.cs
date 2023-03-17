@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using DataModel;
 using JetBrains.Annotations;
 using Pathfinding;
 using Services;
@@ -20,7 +21,7 @@ namespace Controllers.UI
         [SerializeField] private TextMeshProUGUI pathfindingText;
 
         [UsedImplicitly] [Inject] private GameManager _gameManager;
-        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<GameState> _gameState;
+        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
 
         [UsedImplicitly] [Inject] private IAsyncReactiveProperty<PathFindingType> _pathFindingType;
 
@@ -28,7 +29,7 @@ namespace Controllers.UI
         {
             regenerateMapButton.onClick.AddListener(_gameManager.RegenerateCurrentMap);
             var token = this.GetCancellationTokenOnDestroy();
-            _gameState.Select(state => state == GameState.PathFinding).BindToActivity(mainPanel, token);
+            _gameState.Select(state => state is GameStateMapReady).BindToActivity(mainPanel, token);
 
             _pathFindingType.ForEachAwaitAsync(async type =>
             {

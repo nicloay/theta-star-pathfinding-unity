@@ -1,6 +1,7 @@
 using Controllers;
 using Controllers.UI;
 using Cysharp.Threading.Tasks;
+using DataModel;
 using MapGenerator.MapData;
 using MessagePipe;
 using Messages;
@@ -23,7 +24,6 @@ public class SceneScope : LifetimeScope
 
         builder.RegisterComponentInHierarchy<EventSystem>(); // this component can be injected anywhere
         builder.RegisterComponentInHierarchy<MapCameraCtrl>(); 
-        builder.RegisterInstance(new LevelGenerationProgress());
 
         base.Configure(builder);
     }
@@ -68,9 +68,8 @@ public class SceneScope : LifetimeScope
     /// </summary>
     private void RegisterReactiveProperties(IContainerBuilder builder)
     {
-        RegisterReactiveProperty<IMapData>(builder, new EmptyMapData());
+        RegisterReactiveProperty<IGameState>(builder, new GameStateNan());
         RegisterReactiveProperty(builder, PathFindingType.Fast);
-        RegisterReactiveProperty(builder, GameState.Unknown);
         RegisterReactiveProperty(builder, new Resolution { height = Screen.height, width = Screen.width });
         RegisterReactiveProperty<IPathInputState>(builder, new InputIdle());
     }

@@ -8,7 +8,7 @@ using Random = System.Random;
 namespace MapGenerator.MapData
 {
     // we don't want to use BitArray, as we will access array often. so sacrifice space and single bool take 1 byte (not bit)
-    public class RawMapData : IMapData
+    public class RawMapData
     {
         private static readonly Color32 COLOR_PASS = Color.gray;
         private static readonly Color32 COLOR_BLOCK = Color.black;

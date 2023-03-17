@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using DataModel;
 using MapGenerator.MapData;
 using UnityEngine;
 using UnityEngine.UI;
@@ -53,12 +54,12 @@ namespace Utils
             BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
         }
 
-        public static void BindMapDataToMainTex(this IUniTaskAsyncEnumerable<IMapData> source, Renderer target,
+        public static void BindMapDataToMainTex(this IUniTaskAsyncEnumerable<IGameState> source, Renderer target,
             CancellationToken cancellationToken, bool rebindOnError = true)
         {
-            void Setter(IMapData value)
+            void Setter(IGameState value)
             {
-                if (value is RawMapData data) target.material.mainTexture = data.GetTexture();
+                if (value is GameStateMapReady data) target.material.mainTexture = data.RawMapData.GetTexture();
             }
 
             BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();

@@ -1,5 +1,7 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System;
+using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using DataModel;
 using JetBrains.Annotations;
 using MapGenerator.MapData;
 using MessagePipe;
@@ -20,16 +22,30 @@ namespace Controllers
     public class PathInputController : MonoBehaviour
     {
         [Inject] [UsedImplicitly] private EventSystem _eventSystem;
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<GameState> _gameState;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
         [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IMapData> _mapData;
 
+        [Inject] [UsedImplicitly] private IAsyncSubscriber<MapError> _mapErrorSubscriber; // ISubscriber and IPublisher doesn't work at the same class, that's why Async here
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
 
+        private IDisposable _disposable;
         private void Awake()
         {
             var token = this.GetCancellationTokenOnDestroy();
-            _gameState.Select(state => state == GameState.PathFinding).BindToEnableStatus(this, token);
+            _gameState.Select(state => state is GameStateMapReady).BindToEnableStatus(this, token);
+            _disposable = _mapErrorSubscriber.Subscribe( (mapError, _) => 
+            {
+                if (mapError.Error == MapError.ErrorType.PathNotFound)
+                {
+                    _inputState.Value = new InputIdle();
+                }
+                return UniTask.CompletedTask;
+            });
+        }
+
+        private void OnDestroy()
+        {
+            _disposable?.Dispose();
         }
 
         private void Update()
@@ -45,8 +61,11 @@ namespace Controllers
 
 
             var mapPosition = new Vector2Int((int)mousePosition.x, (int)mousePosition.y);
-            if (!((RawMapData)_mapData.Value).IsPassable(mapPosition))
+            if (!((GameStateMapReady)_gameState.Value)!.RawMapData.IsPassable(mapPosition))
+            {
                 _mapErrorPublisher.Publish(new MapError(MapError.ErrorType.WrongPosition));
+                return;
+            }
 
             if (_inputState.Value is InputIdle or InputBothPointsSet)
                 _inputState.Value = new InputFirstPointSet(mapPosition);

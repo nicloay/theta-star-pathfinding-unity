@@ -2,6 +2,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using DataModel;
 using JetBrains.Annotations;
 using MapGenerator.MapData;
 using UnityEngine;
@@ -11,19 +12,11 @@ using VContainer.Unity;
 
 namespace Services
 {
-    public enum GameState
-    {
-        Unknown,
-        MagGeneration,
-        PathFinding
-    }
-
     public class GameManager : IStartable, IDisposable
     {
         private readonly CancellationTokenSource _selfTokenSource = new();
-        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<GameState> _gameState;
-        [UsedImplicitly] [Inject] private LevelGenerationProgress _progress;
-        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<IMapData> _rawMapData;
+        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<IGameState> _gameState;
+       
         [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<Resolution> _resolution;
 
         private CancellationTokenSource mapGeneratorCTX;
@@ -54,11 +47,12 @@ namespace Services
         private async UniTaskVoid GenerateNewMap(int width, int height, CancellationToken token)
         {
             Debug.Log("start new map generation");
-            _gameState.Value = GameState.MagGeneration;
-
-            _rawMapData.Value = await RawMapData.Create(width, height, _progress, mapGeneratorCTX.Token);
+            var progressState = new GameStateMapGeneration();
+            _gameState.Value = progressState;
+            
+            var mapData = await RawMapData.Create(width, height, progressState.Progress, mapGeneratorCTX.Token);
             await UniTask.Delay(100, cancellationToken: token);
-            _gameState.Value = token.IsCancellationRequested ? GameState.Unknown : GameState.PathFinding;
+            _gameState.Value = token.IsCancellationRequested ? new GameStateNan() : new GameStateMapReady(mapData);
             mapGeneratorCTX = null;
         }
     }

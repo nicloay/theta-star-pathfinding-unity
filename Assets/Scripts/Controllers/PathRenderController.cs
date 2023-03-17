@@ -4,14 +4,12 @@ using System.Linq;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
+using DataModel;
 using JetBrains.Annotations;
-using MapGenerator.MapData;
 using MessagePipe;
 using Messages;
 using Pathfinding;
-using Services;
 using UnityEngine;
-using Utils;
 using VContainer;
 
 namespace Controllers
@@ -22,9 +20,11 @@ namespace Controllers
     [RequireComponent(typeof(LineRenderer))]
     public class PathRenderController : MonoBehaviour
     {
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<GameState> _gameState;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
+
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IPathInputState> _inputState;
         private LineRenderer _lineRenderer;
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IMapData> _mapData;
+        [Inject] [UsedImplicitly] private MapCameraCtrl _mapCamera;
 
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
         [Inject] [UsedImplicitly] private IPublisher<VisualMessage> _messenger;
@@ -32,16 +32,14 @@ namespace Controllers
         private IPathFinder _pathFinder;
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<PathFindingType> _pathFindingType;
 
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IPathInputState> _inputState;
-        [Inject] [UsedImplicitly] private MapCameraCtrl _mapCamera;
-        
-        
+
         private void Awake()
         {
             _lineRenderer = GetComponent<LineRenderer>();
             var token = this.GetCancellationTokenOnDestroy();
-            _mapData.CombineLatest(_pathFindingType, (data, type) => true).ToReadOnlyAsyncReactiveProperty(token)
-                .ForEachAwaitAsync(UpdatePathFinding, token);
+            _gameState.CombineLatest(_pathFindingType, (data, type) => data)
+                .ToReadOnlyAsyncReactiveProperty(token)
+                .ForEachAwaitAsync(UpdatePathFinding, token); // combine with pathfinding type to update backed algorithm
             _inputState.ForEachAwaitWithCancellationAsync(CalculatePathAndUpdateRenderer, token);
         }
 
@@ -71,14 +69,14 @@ namespace Controllers
             return UniTask.CompletedTask;
         }
 
-        private UniTask UpdatePathFinding(bool _)
+        private UniTask UpdatePathFinding(IGameState gameState)
         {
-            if (_mapData.Value is not RawMapData data) return UniTask.CompletedTask;
+            if (gameState is not GameStateMapReady data) return UniTask.CompletedTask;
 
             if (_pathFindingType.Value == PathFindingType.Fast)
-                _pathFinder = new ThetaStarOptimised(data.Map);
+                _pathFinder = new ThetaStarOptimised(data.RawMapData.Map);
             else
-                _pathFinder = new ThetaStar(data.Map);
+                _pathFinder = new ThetaStar(data.RawMapData.Map);
             return UniTask.CompletedTask;
         }
 

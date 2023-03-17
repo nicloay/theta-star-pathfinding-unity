@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using DataModel;
 using JetBrains.Annotations;
 using MapGenerator.MapData;
 using UnityEngine;
@@ -11,13 +12,13 @@ namespace Controllers
     [RequireComponent(typeof(Renderer))]
     public class MaterialTextureUpdateCtrl : MonoBehaviour
     {
-        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<IMapData> _mapData;
+        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
 
         private void Awake()
         {
-            var renderer = GetComponent<Renderer>();
-            Assert.IsNotNull(renderer);
-            _mapData.BindMapDataToMainTex(renderer, this.GetCancellationTokenOnDestroy());
+            var r = GetComponent<Renderer>();
+            Assert.IsNotNull(r);
+            _gameState.BindMapDataToMainTex(r, this.GetCancellationTokenOnDestroy());
         }
     }
 }
