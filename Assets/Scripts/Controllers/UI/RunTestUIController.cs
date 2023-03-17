@@ -17,13 +17,21 @@ namespace Controllers.UI
 {
     public class RunTestUIController : MonoBehaviour
     {
+        private enum TestState
+        {
+            WaitPoints,
+            PointsSet,
+            InProgress,
+            InProgressThreadLocked
+        }
+        
         [SerializeField] private GameObject hintText;
         [SerializeField] private Button runTestButton;
 
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
         [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
         [Inject] [UsedImplicitly] private IPublisher<VisualMessage> _messenger;
-
+        
         private const int TEST_NUMBER = 16;
         
         private void Awake(){
@@ -31,18 +39,31 @@ namespace Controllers.UI
             _inputState.Select(status => status is InputBothPointsSet)
                 .BindToActivity(runTestButton.gameObject, token);
             _inputState.Select(status => status is not InputBothPointsSet).BindToActivity(hintText.gameObject, token);
+
+            _inputState.ForEachAwaitAsync((_)=>TerminateTest(), token);
             
             runTestButton.onClick.AddListener(()=>
             {
-                _ctx = CancellationTokenSource.CreateLinkedTokenSource(this.GetCancellationTokenOnDestroy()); 
+                _ctx = CancellationTokenSource.CreateLinkedTokenSource(token); 
                 RunTest(_ctx.Token).Forget();
             });
+        }
+
+        private UniTask TerminateTest()
+        {
+            if (_ctx != null)
+            {
+                _ctx.Cancel();
+                _ctx = null;
+            }
+            return UniTask.CompletedTask;
         }
 
         private CancellationTokenSource _ctx;
 
         private async UniTaskVoid RunTest(CancellationToken token)
         {
+            token.Register(() => _messenger.Publish(new VisualMessage("Test terminated")));
             var bothPoints = (InputBothPointsSet)_inputState.Value;
             
             var stopWatch = new Stopwatch();
@@ -54,8 +75,8 @@ namespace Controllers.UI
             if (token.IsCancellationRequested)return;
             var avgSlow = slowResults.OrderBy(l => l).Skip(3).Take(10).Average(l => l);
             var avgFast = fastResult.OrderBy(l => l).Skip(3).Take(10).Average(l => l);
-            _messenger.Publish(new VisualMessage($"Average SLOW: {avgSlow}"));
-            _messenger.Publish(new VisualMessage($"Average FAST: {avgFast}"));
+            _messenger.Publish(new VisualMessage($"Average SLOW: {avgSlow}ms"));
+            _messenger.Publish(new VisualMessage($"Average FAST: {avgFast}ms"));
             _ctx = null;
         }
 
@@ -64,14 +85,14 @@ namespace Controllers.UI
             var result = new long[TEST_NUMBER];
             for (int i = 0; i < TEST_NUMBER; i++)
             {
-                await UniTask.Delay(1000, cancellationToken:token);
+                await UniTask.Delay(600, cancellationToken:token);
                 if (token.IsCancellationRequested) break;
                 stopWatch.Reset();
                 stopWatch.Start();
                 pathFinder.CalculatePath(from, to);
                 if (token.IsCancellationRequested) break;
                 stopWatch.Stop();
-                _messenger.Publish(new VisualMessage($"{prefix} {i} = {stopWatch.ElapsedMilliseconds}"));
+                _messenger.Publish(new VisualMessage($"{prefix} {i} = {stopWatch.ElapsedMilliseconds}ms"));
                 result[i] = stopWatch.ElapsedMilliseconds;
             }
 
