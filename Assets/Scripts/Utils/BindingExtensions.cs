@@ -2,7 +2,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using DataModel;
-using MapGenerator.MapData;
 using UnityEngine;
 using UnityEngine.UI;
 

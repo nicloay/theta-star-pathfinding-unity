@@ -3,10 +3,8 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using DataModel;
 using JetBrains.Annotations;
-using MapGenerator.MapData;
 using MessagePipe;
 using Messages;
-using Services;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Utils;
@@ -21,31 +19,25 @@ namespace Controllers
     /// </summary>
     public class PathInputController : MonoBehaviour
     {
+        private IDisposable _disposable;
         [Inject] [UsedImplicitly] private EventSystem _eventSystem;
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
         [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
-
-        [Inject] [UsedImplicitly] private IAsyncSubscriber<MapError> _mapErrorSubscriber; // ISubscriber and IPublisher doesn't work at the same class, that's why Async here
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
 
-        private IDisposable _disposable;
+        [Inject] [UsedImplicitly]
+        private IAsyncSubscriber<MapError>
+            _mapErrorSubscriber; // ISubscriber and IPublisher doesn't work at the same class, that's why Async here
+
         private void Awake()
         {
             var token = this.GetCancellationTokenOnDestroy();
             _gameState.Select(state => state is GameStateMapReady).BindToEnableStatus(this, token);
-            _disposable = _mapErrorSubscriber.Subscribe( (mapError, _) => 
+            _disposable = _mapErrorSubscriber.Subscribe((mapError, _) =>
             {
-                if (mapError.Error == MapError.ErrorType.PathNotFound)
-                {
-                    _inputState.Value = new InputIdle();
-                }
+                if (mapError.Error == MapError.ErrorType.PathNotFound) _inputState.Value = new InputIdle();
                 return UniTask.CompletedTask;
             });
-        }
-
-        private void OnDestroy()
-        {
-            _disposable?.Dispose();
         }
 
         private void Update()
@@ -81,6 +73,11 @@ namespace Controllers
         private void OnDisable()
         {
             _inputState.Value = new InputIdle();
+        }
+
+        private void OnDestroy()
+        {
+            _disposable?.Dispose();
         }
     }
 }

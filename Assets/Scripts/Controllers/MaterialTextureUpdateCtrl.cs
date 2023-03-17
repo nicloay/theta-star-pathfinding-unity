@@ -1,7 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using DataModel;
 using JetBrains.Annotations;
-using MapGenerator.MapData;
 using UnityEngine;
 using UnityEngine.Assertions;
 using Utils;

@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Controllers
 {
@@ -7,6 +6,7 @@ namespace Controllers
     public class MapCameraCtrl : MonoBehaviour
     {
         private Camera _camera;
+
         private void Awake()
         {
             _camera = GetComponent<Camera>();

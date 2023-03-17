@@ -6,7 +6,6 @@ using DataModel;
 using JetBrains.Annotations;
 using MapGenerator.MapData;
 using UnityEngine;
-using Utils;
 using VContainer;
 using VContainer.Unity;
 
@@ -16,7 +15,7 @@ namespace Services
     {
         private readonly CancellationTokenSource _selfTokenSource = new();
         [UsedImplicitly] [Inject] private IAsyncReactiveProperty<IGameState> _gameState;
-       
+
         [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<Resolution> _resolution;
 
         private CancellationTokenSource mapGeneratorCTX;
@@ -49,7 +48,7 @@ namespace Services
             Debug.Log("start new map generation");
             var progressState = new GameStateMapGeneration();
             _gameState.Value = progressState;
-            
+
             var mapData = await RawMapData.Create(width, height, progressState.Progress, mapGeneratorCTX.Token);
             await UniTask.Delay(100, cancellationToken: token);
             _gameState.Value = token.IsCancellationRequested ? new GameStateNan() : new GameStateMapReady(mapData);

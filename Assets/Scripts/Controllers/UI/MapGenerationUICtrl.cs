@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using DataModel;
 using JetBrains.Annotations;
-using Services;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +35,7 @@ namespace Controllers.UI
                 gameStateProgress.Progress.Progress.BindToSize(_progressBar, token);
                 gameStateProgress.Progress.Progress.Select(f => $"{(int)(f * 100f)}%").BindTo(_progressText, token);
             }
+
             return UniTask.CompletedTask;
         }
     }

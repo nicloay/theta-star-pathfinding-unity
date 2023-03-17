@@ -39,7 +39,8 @@ namespace Controllers
             var token = this.GetCancellationTokenOnDestroy();
             _gameState.CombineLatest(_pathFindingType, (data, type) => data)
                 .ToReadOnlyAsyncReactiveProperty(token)
-                .ForEachAwaitAsync(UpdatePathFinding, token); // combine with pathfinding type to update backed algorithm
+                .ForEachAwaitAsync(UpdatePathFinding,
+                    token); // combine with pathfinding type to update backed algorithm
             _inputState.ForEachAwaitWithCancellationAsync(CalculatePathAndUpdateRenderer, token);
         }
 

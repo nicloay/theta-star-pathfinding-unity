@@ -2,7 +2,6 @@ using Controllers;
 using Controllers.UI;
 using Cysharp.Threading.Tasks;
 using DataModel;
-using MapGenerator.MapData;
 using MessagePipe;
 using Messages;
 using Pathfinding;
@@ -23,7 +22,7 @@ public class SceneScope : LifetimeScope
         RegisterMessagePipe(builder);
 
         builder.RegisterComponentInHierarchy<EventSystem>(); // this component can be injected anywhere
-        builder.RegisterComponentInHierarchy<MapCameraCtrl>(); 
+        builder.RegisterComponentInHierarchy<MapCameraCtrl>();
 
         base.Configure(builder);
     }
