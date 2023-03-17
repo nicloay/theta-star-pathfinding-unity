@@ -9,6 +9,8 @@ namespace Pathfinding
     /// Theta* path finder implementation
     /// algorithm https://en.wikipedia.org/wiki/Theta*
     /// use custom <see cref="PriorityQueue"/>
+    ///
+    /// line of sight algorithm is taken from here https://news.movel.ai/theta-star"
     /// </summary>
     public class ThetaStar : IPathFinder
     {
