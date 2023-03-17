@@ -14,21 +14,16 @@ using VContainer;
 
 namespace Controllers
 {
-    /// <summary>
-    ///     TODO: rename or SRP
-    /// </summary>
     [RequireComponent(typeof(LineRenderer))]
     public class PathRenderController : MonoBehaviour
     {
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
-
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IPathInputState> _inputState;
+
         private LineRenderer _lineRenderer;
         [Inject] [UsedImplicitly] private MapCameraCtrl _mapCamera;
-
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
         [Inject] [UsedImplicitly] private IPublisher<VisualMessage> _messenger;
-
         private IPathFinder _pathFinder;
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<PathFindingType> _pathFindingType;
 

@@ -25,8 +25,7 @@ namespace Controllers
         [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
 
-        [Inject] [UsedImplicitly]
-        private IAsyncSubscriber<MapError>
+        [Inject] [UsedImplicitly] private IAsyncSubscriber<MapError>
             _mapErrorSubscriber; // ISubscriber and IPublisher doesn't work at the same class, that's why Async here
 
         private void Awake()
