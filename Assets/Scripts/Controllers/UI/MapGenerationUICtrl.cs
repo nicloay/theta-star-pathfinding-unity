@@ -11,6 +11,9 @@ using VContainer;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// UI controller which show progress bar when new map generates
+    /// </summary>
     public class MapGenerationUICtrl : MonoBehaviour
     {
         [SerializeField] private GameObject _mainContainer;

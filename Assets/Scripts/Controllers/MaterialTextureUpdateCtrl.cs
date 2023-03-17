@@ -8,6 +8,9 @@ using VContainer;
 
 namespace Controllers
 {
+    /// <summary>
+    /// Controller which request and update texture on the screen from the raw map data when it's ready
+    /// </summary>
     [RequireComponent(typeof(Renderer))]
     public class MaterialTextureUpdateCtrl : MonoBehaviour
     {

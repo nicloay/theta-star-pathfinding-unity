@@ -7,7 +7,12 @@ using Random = System.Random;
 
 namespace MapGenerator.MapData
 {
-    // we don't want to use BitArray, as we will access array often. so sacrifice space and single bool take 1 byte (not bit)
+    /// <summary>
+    /// contains raw map data as bool[,] array.
+    /// map data is created from FastNoiseLite (3dParty) function
+    /// also has method to convert final data to texture
+    /// we don't want to use BitArray, as we will access array often. so sacrifice space and single bool take 1 byte (not bit)
+    /// </summary>
     public class RawMapData
     {
         private static readonly Color32 COLOR_PASS = Color.gray;

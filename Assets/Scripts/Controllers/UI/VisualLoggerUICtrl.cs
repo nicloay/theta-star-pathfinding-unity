@@ -11,6 +11,10 @@ using VContainer;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// Main Visual Log controller
+    /// Intercept log messages and spawn text fields on the screen
+    /// </summary>
     public class VisualLoggerUICtrl : MonoBehaviour
     {
         [SerializeField] private VisualLoggerItem itemPrefab;

@@ -7,7 +7,7 @@ using VContainer.Unity;
 namespace Messages
 {
     /// <summary>
-    ///     intercept map error and send visual message with it
+    ///     intercept map error and send another visual message with it
     /// </summary>
     public class MapErrorProxy : IStartable, IDisposable
     {

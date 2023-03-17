@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Utils
 {
+    /// <summary>
+    /// Object pool responsible to provide general method to reuse objects on the scene
+    /// </summary>
     public class ObjectPool<T> where T : MonoBehaviour
     {
         private readonly Queue<T> _instances = new();

@@ -7,6 +7,10 @@ using Utils;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// Error message Instance controller, Spawned through ObjectPool
+    /// has reference to text box and contains animation methods
+    /// </summary>
     [RequireComponent(typeof(Canvas))]
     [RequireComponent(typeof(CanvasGroup))]
     public class ErrorPopupItem : MonoBehaviour, ISortingOrder

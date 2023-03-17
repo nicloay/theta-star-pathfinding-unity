@@ -6,6 +6,15 @@ using UnityEngine;
 
 namespace Pathfinding
 {
+    /// <summary>
+    ///     Fastest Theta star pathfinding implementation,
+    ///     it's the same as <see cref="ThetaStar"/>
+    ///     but instead of Vector2Int (int,int) tupple is used, also has another optimisations
+    ///     use 3dParty PriorityQueue
+    ///     <see>
+    ///         <cref>https://en.wikipedia.org/wiki/Theta*</cref>
+    ///     </see>
+    /// </summary>
     public class ThetaStarOptimised : IPathFinder
     {
         private static readonly (int, int) UNKNOWN = new(-1, -1);
@@ -38,13 +47,7 @@ namespace Pathfinding
             _openQueue = new FastPriorityQueue<Vector2IntNode>(10000);
             _closedQueue = new HashSet<(int, int)>(new TupleComparer());
         }
-
-        /// <summary>
-        ///     Theta star pathfinding implementation,
-        ///     <see>
-        ///         <cref>https://en.wikipedia.org/wiki/Theta*</cref>
-        ///     </see>
-        /// </summary>
+        
         public List<Vector2Int> CalculatePath(Vector2Int start, Vector2Int end)
         {
             return CalculatePath((start.x, start.y), (end.x, end.y));

@@ -12,6 +12,10 @@ using VContainer;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// UI controller responsible to show buttons and text when map is ready
+    /// e.g. Regenerate button or switching pathfinding implementation (Slow/Fast)
+    /// </summary>
     public class PathfindingUICtrl : MonoBehaviour
     {
         [SerializeField] private Button regenerateMapButton;

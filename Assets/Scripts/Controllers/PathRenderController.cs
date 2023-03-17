@@ -14,11 +14,15 @@ using VContainer;
 
 namespace Controllers
 {
+    /// <summary>
+    /// All in One controller
+    /// Intercept <see cref="IInputState"/> and according to state generate path and show line renderer with them
+    /// </summary>
     [RequireComponent(typeof(LineRenderer))]
     public class PathRenderController : MonoBehaviour
     {
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IPathInputState> _inputState;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IInputState> _inputState;
 
         private LineRenderer _lineRenderer;
         [Inject] [UsedImplicitly] private MapCameraCtrl _mapCamera;
@@ -39,9 +43,9 @@ namespace Controllers
             _inputState.ForEachAwaitWithCancellationAsync(CalculatePathAndUpdateRenderer, token);
         }
 
-        private UniTask CalculatePathAndUpdateRenderer(IPathInputState pathState, CancellationToken token)
+        private UniTask CalculatePathAndUpdateRenderer(IInputState state, CancellationToken token)
         {
-            if (pathState is InputBothPointsSet bothPoints)
+            if (state is InputBothPointsSet bothPoints)
             {
                 var stopWatch = new Stopwatch();
                 stopWatch.Start();

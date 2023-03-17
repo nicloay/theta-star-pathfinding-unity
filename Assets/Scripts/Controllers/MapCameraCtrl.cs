@@ -2,6 +2,9 @@
 
 namespace Controllers
 {
+    /// <summary>
+    /// Camera which render the map, also convert Vector2Int screen coordinates to global coordinates
+    /// </summary>
     [RequireComponent(typeof(Camera))]
     public class MapCameraCtrl : MonoBehaviour
     {

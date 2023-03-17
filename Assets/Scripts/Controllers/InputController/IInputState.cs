@@ -2,16 +2,22 @@
 
 namespace Controllers
 {
-    public interface IPathInputState
+    
+    /// <summary>
+    /// When map is ready, these states used as State machine:
+    /// values: Idle, FirstPointSet, BothPointsSet
+    /// some states encapsulate Vector2Int positions
+    /// </summary>
+    public interface IInputState
     {
     }
 
 
-    public class InputIdle : IPathInputState
+    public class InputIdle : IInputState
     {
     }
 
-    public class InputFirstPointSet : IPathInputState
+    public class InputFirstPointSet : IInputState
     {
         public readonly Vector2Int FirstPoint;
 

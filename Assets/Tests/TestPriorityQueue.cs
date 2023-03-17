@@ -4,6 +4,9 @@ using Utils;
 
 namespace Tests
 {
+    /// <summary>
+    /// few tests to check Priority queue works correctly
+    /// </summary>
     public class TestPriorityQueue
     {
         private static readonly Vector2Int V1 = Vector2Int.down;

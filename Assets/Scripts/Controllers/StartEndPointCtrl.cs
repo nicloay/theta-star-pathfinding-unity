@@ -7,6 +7,9 @@ using VContainer;
 
 namespace Controllers
 {
+    /// <summary>
+    /// Game controllers, sync position for the start and end click points
+    /// </summary>
     [RequireComponent(typeof(Renderer))]
     public class StartEndPointCtrl : MonoBehaviour
     {
@@ -19,7 +22,7 @@ namespace Controllers
 
         [SerializeField] private PointType type;
 
-        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IPathInputState> _inputState;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IInputState> _inputState;
         [Inject] [UsedImplicitly] private MapCameraCtrl _mapCamera;
 
         private Renderer _renderer;
@@ -31,7 +34,7 @@ namespace Controllers
             _inputState.ForEachAwaitWithCancellationAsync(UpdatePosition, token);
         }
 
-        private UniTask UpdatePosition(IPathInputState mapPosition, CancellationToken token)
+        private UniTask UpdatePosition(IInputState mapPosition, CancellationToken token)
         {
             if (type == PointType.End)
             {

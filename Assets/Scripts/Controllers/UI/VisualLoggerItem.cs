@@ -7,6 +7,10 @@ using Utils;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// Log item controller which show text sent by another components on the screen
+    /// spawned by ObjectPool
+    /// </summary>
     public class VisualLoggerItem : MonoBehaviour, IResetSiblingIndex
     {
         private const float DURATION = 0.25f;

@@ -15,6 +15,9 @@ using VContainer;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// All in One, When map is generated this UI controller contains button to start several tests on fast and slow pathfinding
+    /// </summary>
     public class RunTestUIController : MonoBehaviour
     {
         private const int TEST_NUMBER = 16;
@@ -24,7 +27,7 @@ namespace Controllers.UI
         private CancellationTokenSource _ctx;
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
 
-        [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
+        [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IInputState> _inputState;
         [Inject] [UsedImplicitly] private IPublisher<VisualMessage> _messenger;
 
         private void Awake()

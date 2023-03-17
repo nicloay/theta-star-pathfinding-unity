@@ -7,6 +7,9 @@ using UnityEngine.UI;
 
 namespace Utils
 {
+    /// <summary>
+    /// Utility methods used to bind reactive properties to different components
+    /// </summary>
     public static class BindingExtensions
     {
         public static void BindToEnableStatus(this IUniTaskAsyncEnumerable<bool> source, MonoBehaviour monoBehaviour,

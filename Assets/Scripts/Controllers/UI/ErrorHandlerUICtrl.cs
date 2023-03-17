@@ -10,6 +10,9 @@ using VContainer;
 
 namespace Controllers.UI
 {
+    /// <summary>
+    /// Bottom bar which spawn messages if any error occurs
+    /// </summary>
     public class ErrorHandlerUICtrl : MonoBehaviour
     {
         [SerializeField] private ErrorPopupItem prefab;

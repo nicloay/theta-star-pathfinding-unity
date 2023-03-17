@@ -13,6 +13,8 @@ using VContainer;
 namespace Controllers
 {
     /// <summary>
+    ///     State machine which Set InputState used by few modules
+    /// 
     ///     We use MonoBehaviour.enable and OnEnable/OnDisable methods here
     ///     to control input (if it's active or not)
     ///     otherwise it's possible to make this class as POCO service
@@ -22,7 +24,7 @@ namespace Controllers
         private IDisposable _disposable;
         [Inject] [UsedImplicitly] private EventSystem _eventSystem;
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IGameState> _gameState;
-        [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
+        [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IInputState> _inputState;
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
 
         [Inject] [UsedImplicitly] private IAsyncSubscriber<MapError>

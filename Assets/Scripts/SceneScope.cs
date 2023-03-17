@@ -70,7 +70,7 @@ public class SceneScope : LifetimeScope
         RegisterReactiveProperty<IGameState>(builder, new GameStateNan());
         RegisterReactiveProperty(builder, PathFindingType.Fast);
         RegisterReactiveProperty(builder, new Resolution { height = Screen.height, width = Screen.width });
-        RegisterReactiveProperty<IPathInputState>(builder, new InputIdle());
+        RegisterReactiveProperty<IInputState>(builder, new InputIdle());
     }
 
     private static void RegisterReactiveProperty<T>(IContainerBuilder builder, T value)

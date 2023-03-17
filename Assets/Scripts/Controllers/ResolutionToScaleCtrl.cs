@@ -6,6 +6,9 @@ using VContainer;
 
 namespace Controllers
 {
+    /// <summary>
+    /// Synchronise map scale with screen aspect through resolution property
+    /// </summary>
     public class ResolutionToScaleCtrl : MonoBehaviour
     {
         [Inject]

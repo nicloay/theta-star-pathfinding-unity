@@ -5,6 +5,11 @@ using Utils;
 
 namespace Pathfinding
 {
+    /// <summary>
+    /// Theta* path finder implementation
+    /// algorithm https://en.wikipedia.org/wiki/Theta*
+    /// use custom <see cref="PriorityQueue"/>
+    /// </summary>
     public class ThetaStar : IPathFinder
     {
         private static readonly Vector2Int UNKNOWN = new(-1, -1);
