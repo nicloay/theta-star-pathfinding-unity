@@ -4,8 +4,10 @@ using Cysharp.Threading.Tasks;
 using MapGenerator.MapData;
 using MessagePipe;
 using Messages;
+using Pathfinding;
 using Services;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using Utils;
 using VContainer;
 using VContainer.Unity;
@@ -18,9 +20,10 @@ public class SceneScope : LifetimeScope
         RegisterEntryPoints(builder);
         InjectToComponentsOnScene(builder);
         RegisterMessagePipe(builder);
-        
+
+        builder.RegisterComponentInHierarchy<EventSystem>(); // this component can be injected anywhere
         builder.RegisterInstance(new LevelGenerationProgress());
-        
+
         base.Configure(builder);
     }
 
@@ -29,6 +32,7 @@ public class SceneScope : LifetimeScope
         var options = builder.RegisterMessagePipe();
         builder.RegisterBuildCallback(c => GlobalMessagePipe.SetProvider(c.AsServiceProvider()));
         builder.RegisterMessageBroker<MapError>(options);
+        builder.RegisterMessageBroker<VisualMessage>(options);
     }
 
     // components which are only receive injections, You can not inject these types to another consumers
@@ -40,31 +44,37 @@ public class SceneScope : LifetimeScope
         InjectToComponents<MapGenerationUICtrl>(builder);
         InjectToComponents<PathfindingUICtrl>(builder);
         InjectToComponents<ErrorHandlerUICtrl>(builder);
+        InjectToComponents<VisualLoggerUICtrl>(builder);
+        InjectToComponents<RunTestUIController>(builder);
     }
 
-    
+
     /// <summary>
-    /// Services with the same lifetime as Scope
+    ///     Services with the same lifetime as Scope
     /// </summary>
     private void RegisterEntryPoints(IContainerBuilder builder)
     {
         builder.RegisterEntryPoint<ScreenSizeMonitor>().AsSelf();
         builder.RegisterEntryPoint<GameManager>().AsSelf();
+        builder.RegisterEntryPoint<VisualMessageLogger>().AsSelf();
+        builder.RegisterEntryPoint<MapErrorProxy>().AsSelf();
     }
 
     /// <summary>
-    /// Collection of reactive properties
+    ///     Collection of reactive properties
     /// </summary>
     private void RegisterReactiveProperties(IContainerBuilder builder)
     {
         RegisterReactiveProperty<IMapData>(builder, new EmptyMapData());
+        RegisterReactiveProperty(builder, PathFindingType.Fast);
         RegisterReactiveProperty(builder, GameState.Unknown);
-        RegisterReactiveProperty(builder, new Resolution(){height = Screen.height, width = Screen.width});
+        RegisterReactiveProperty(builder, new Resolution { height = Screen.height, width = Screen.width });
+        RegisterReactiveProperty(builder, PathVisibleStatus.No);
     }
 
     private static void RegisterReactiveProperty<T>(IContainerBuilder builder, T value)
     {
-        builder.RegisterInstance<AsyncReactiveProperty<T>>(new AsyncReactiveProperty<T>(value))
+        builder.RegisterInstance(new AsyncReactiveProperty<T>(value))
             .As<IAsyncReactiveProperty<T>>()
             .As<IReadOnlyAsyncReactiveProperty<T>>();
     }

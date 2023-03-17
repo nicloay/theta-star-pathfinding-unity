@@ -6,9 +6,8 @@ using UnityEngine;
 
 namespace Pathfinding
 {
-    public class ThetaStarOptimised
+    public class ThetaStarOptimised : IPathFinder
     {
-        
         private static readonly (int, int) UNKNOWN = new(-1, -1);
         private readonly HashSet<(int, int)> _closedQueue; // OPTIMISATION4 - see below
         private readonly float[,] _gScore; // [x,y]
@@ -16,12 +15,16 @@ namespace Pathfinding
 
 
         private readonly bool[,] _map;
-        
+
         //private readonly Dictionary<Vector2Int, Vector2IntNode> _nodeByVector = new(); 
-        private readonly Dictionary<(int, int), Vector2IntNode> _nodeByVector = new(comparer:new TupleComparer()); // OPTIMISATION4: use int instead of vector to reduce hash calculation at dict
-        
-        private readonly FastPriorityQueue<Vector2IntNode> _openQueue; // OPTIMISATION1 - replace priorityqueue with fast one
-        private readonly (int,int)[,] _parent; // [x,y]
+        private readonly Dictionary<(int, int), Vector2IntNode>
+            _nodeByVector =
+                new(new TupleComparer()); // OPTIMISATION4: use int instead of vector to reduce hash calculation at dict
+
+        private readonly FastPriorityQueue<Vector2IntNode>
+            _openQueue; // OPTIMISATION1 - replace priorityqueue with fast one
+
+        private readonly (int, int)[,] _parent; // [x,y]
         private readonly int _width;
         private (int, int) _end;
 
@@ -31,15 +34,25 @@ namespace Pathfinding
             _width = map.GetLength(0);
             _height = map.GetLength(1);
             _gScore = new float[_width, _height];
-            _parent = new (int,int) [_width, _height];
+            _parent = new (int, int) [_width, _height];
             _openQueue = new FastPriorityQueue<Vector2IntNode>(10000);
-            _closedQueue = new HashSet<(int,int)>(comparer:new TupleComparer());
+            _closedQueue = new HashSet<(int, int)>(new TupleComparer());
         }
-
 
         public bool IsPassable(Vector2Int position)
         {
             return _map[position.x, position.y];
+        }
+
+        /// <summary>
+        ///     Theta star pathfinding implementation,
+        ///     <see>
+        ///         <cref>https://en.wikipedia.org/wiki/Theta*</cref>
+        ///     </see>
+        /// </summary>
+        public List<Vector2Int> CalculatePath(Vector2Int start, Vector2Int end)
+        {
+            return CalculatePath((start.x, start.y), (end.x, end.y));
         }
 
         private void ResetCache()
@@ -74,21 +87,11 @@ namespace Pathfinding
         {
             var dsx = from.Item1 - to.Item1;
             var dsy = from.Item2 - to.Item2;
-            return (Mathf.Sqrt(dsx * dsx + dsy * dsy));
-        }
-        
-        /// <summary>
-        ///     Theta star pathfinding implementation,
-        ///     <see>
-        ///         <cref>https://en.wikipedia.org/wiki/Theta*</cref>
-        ///     </see>
-        /// </summary>
-        public List<Vector2Int> CalculatePath(Vector2Int start, Vector2Int end)
-        {
-            return CalculatePath((start.x, start.y), (end.x, end.y));
+            return Mathf.Sqrt(dsx * dsx + dsy * dsy);
         }
 
-        public List<Vector2Int> CalculatePath((int, int) start, (int, int) end){
+        public List<Vector2Int> CalculatePath((int, int) start, (int, int) end)
+        {
             _end = end;
             ResetCache();
 
@@ -104,11 +107,11 @@ namespace Pathfinding
                 if (s == end) return ReconstructPath(s);
 
                 _closedQueue.Add(s);
-                foreach (var (x,y)  in GetNeighbours(s))
+                foreach (var (x, y) in GetNeighbours(s))
                 {
                     if (x < 0 || y < 0 || x >= _width || y >= _height ||
                         !_map[x, y] ||
-                        _closedQueue.Contains((x,y))) continue;
+                        _closedQueue.Contains((x, y))) continue;
 
 
                     if (!_nodeByVector.ContainsKey((x, y)))
@@ -117,25 +120,11 @@ namespace Pathfinding
                         _parent[x, y] = UNKNOWN;
                     }
 
-                    UpdateVertex(s, (x,y));
+                    UpdateVertex(s, (x, y));
                 }
             }
 
             return null;
-        }
-
-        
-        private class TupleComparer : IEqualityComparer<(int, int)> // OPTIMISATION 6 - replace hash calculation at comparer functions 16 bit per axis
-        {
-            public bool Equals((int, int) x, (int, int) y)
-            {
-                return x.Item1 == y.Item1 && x.Item2 == y.Item2;
-            }
-
-            public int GetHashCode((int, int) obj)
-            {
-                return (obj.Item1 << 16 | obj.Item2);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -242,7 +231,7 @@ namespace Pathfinding
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static (int,int)[] GetNeighbours((int, int) position) // OPTIMISATION5 - use tuples instead of Vectors
+        private static (int, int)[] GetNeighbours((int, int) position) // OPTIMISATION5 - use tuples instead of Vectors
         {
             return new[]
             {
@@ -266,6 +255,21 @@ namespace Pathfinding
             var p = _parent[s.Item1, s.Item2];
             result.Add(new Vector2Int(p.Item1, p.Item2));
             return result;
+        }
+
+
+        private class
+            TupleComparer : IEqualityComparer<(int, int)> // OPTIMISATION 6 - replace hash calculation at comparer functions 16 bit per axis
+        {
+            public bool Equals((int, int) x, (int, int) y)
+            {
+                return x.Item1 == y.Item1 && x.Item2 == y.Item2;
+            }
+
+            public int GetHashCode((int, int) obj)
+            {
+                return (obj.Item1 << 16) | obj.Item2;
+            }
         }
     }
 }

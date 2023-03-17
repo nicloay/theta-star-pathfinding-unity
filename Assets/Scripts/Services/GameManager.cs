@@ -17,16 +17,23 @@ namespace Services
         MagGeneration,
         PathFinding
     }
-    
+
     public class GameManager : IStartable, IDisposable
     {
-        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<IMapData> _rawMapData;
-        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<GameState> _gameState ;
-        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<Resolution> _resolution;
+        private readonly CancellationTokenSource _selfTokenSource = new();
+        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<GameState> _gameState;
         [UsedImplicitly] [Inject] private LevelGenerationProgress _progress;
+        [UsedImplicitly] [Inject] private IAsyncReactiveProperty<IMapData> _rawMapData;
+        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<Resolution> _resolution;
 
         private CancellationTokenSource mapGeneratorCTX;
-        private readonly CancellationTokenSource _selfTokenSource = new CancellationTokenSource();
+
+        public void Dispose()
+        {
+            _selfTokenSource.Dispose();
+            mapGeneratorCTX?.Dispose();
+        }
+
         public void Start()
         {
             _resolution.ForEachAwaitAsync(async resolution => RegenerateMap(resolution), _selfTokenSource.Token);
@@ -36,13 +43,10 @@ namespace Services
         {
             RegenerateMap(_resolution.Value);
         }
-        
-        private void  RegenerateMap(Resolution resolution)
+
+        private void RegenerateMap(Resolution resolution)
         {
-            if (mapGeneratorCTX != null)
-            {
-                mapGeneratorCTX.Cancel();
-            }
+            if (mapGeneratorCTX != null) mapGeneratorCTX.Cancel();
             mapGeneratorCTX = new CancellationTokenSource();
             GenerateNewMap(resolution.width, resolution.height, mapGeneratorCTX.Token).Forget();
         }
@@ -51,17 +55,11 @@ namespace Services
         {
             Debug.Log("start new map generation");
             _gameState.Value = GameState.MagGeneration;
-            
+
             _rawMapData.Value = await RawMapData.Create(width, height, _progress, mapGeneratorCTX.Token);
             await UniTask.Delay(100, cancellationToken: token);
             _gameState.Value = token.IsCancellationRequested ? GameState.Unknown : GameState.PathFinding;
             mapGeneratorCTX = null;
-        }
-        
-        public void Dispose()
-        {
-            _selfTokenSource.Dispose();
-            mapGeneratorCTX?.Dispose();
         }
     }
 }

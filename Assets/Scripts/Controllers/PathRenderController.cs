@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
@@ -9,10 +10,18 @@ using Messages;
 using Pathfinding;
 using Services;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using Utils;
 using VContainer;
 
 namespace Controllers
 {
+    public enum PathVisibleStatus
+    {
+        No,
+        Yes
+    }
+
     /// <summary>
     ///     TODO: rename or SRP
     /// </summary>
@@ -23,24 +32,33 @@ namespace Controllers
         [SerializeField] private GameObject pathEndObject;
         private Camera _camera;
         private Vector2Int _endPoint;
+        [Inject] [UsedImplicitly] private EventSystem _eventSystem;
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<GameState> _gameState;
+        [Inject] [UsedImplicitly] private IAsyncReactiveProperty<PathVisibleStatus> _isPathVisible;
         private LineRenderer _lineRenderer;
-
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<IMapData> _mapData;
+
         [Inject] [UsedImplicitly] private IPublisher<MapError> _mapErrorPublisher;
-        private ThetaStarOptimised _pathFinder;
+        [Inject] [UsedImplicitly] private IPublisher<VisualMessage> _messenger;
 
-
+        private IPathFinder _pathFinder;
+        [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<PathFindingType> _pathFindingType;
         private Vector2Int _startingPoint;
-        private Status _status;
+
+        private readonly IAsyncReactiveProperty<PathStatus> _status =
+            new AsyncReactiveProperty<PathStatus>(PathStatus.Pending);
 
         private void Awake()
         {
             _lineRenderer = GetComponent<LineRenderer>();
             _camera = Camera.main;
             var token = this.GetCancellationTokenOnDestroy();
-            _mapData.ForEachAwaitAsync(UpdatePathFinding, token);
-            _gameState.ForEachAwaitAsync(OnGameStateChange, token);
+            _mapData.CombineLatest(_pathFindingType, (data, type) => true).ToReadOnlyAsyncReactiveProperty(token)
+                .ForEachAwaitAsync(UpdatePathFinding, token);
+            _isPathVisible.Select(visible => visible == PathVisibleStatus.Yes).BindToEnableStatus(_lineRenderer, token);
+            _status.Select(status => status is PathStatus.Point1 or PathStatus.Point2)
+                .BindToActivity(pathStartObject, token);
+            _status.Select(status => status is PathStatus.Point2).BindToActivity(pathEndObject, token);
         }
 
         private void Update()
@@ -49,6 +67,7 @@ namespace Controllers
 
             if (!Input.GetMouseButtonDown(0)) return;
 
+            if (_eventSystem.IsPointerOverGameObject()) return;
 
             var mousePosition = Input.mousePosition;
             if (mousePosition.x < 0 || mousePosition.y < 0 || mousePosition.x >= Screen.width ||
@@ -63,60 +82,48 @@ namespace Controllers
                 return;
             }
 
-            switch (_status)
+            switch (_status.Value)
             {
-                case Status.Point2:
-                case Status.Pending:
+                case PathStatus.Point2:
+                case PathStatus.Pending:
                     _startingPoint = mapPosition;
-                    SetNextStatus(Status.Point1);
+                    SetNextStatus(PathStatus.Point1);
                     break;
-                case Status.Point1:
+                case PathStatus.Point1:
                     _endPoint = mapPosition;
-                    SetNextStatus(Status.Point2);
+                    SetNextStatus(PathStatus.Point2);
                     break;
             }
         }
 
-        private UniTask OnGameStateChange(GameState gameState)
+        private void SetNextStatus(PathStatus pathStatus)
         {
-            if (gameState != GameState.PathFinding)
+            _status.Value = pathStatus;
+            switch (pathStatus)
             {
-                pathStartObject.SetActive(false);
-                pathEndObject.SetActive(false);
-            }
-
-            return UniTask.CompletedTask;
-        }
-
-        private void SetNextStatus(Status status)
-        {
-            _status = status;
-            switch (status)
-            {
-                case Status.Pending:
-                    _lineRenderer.enabled = false;
-                    pathStartObject.SetActive(false);
-                    pathEndObject.SetActive(false);
-                    //hide all points and path
+                case PathStatus.Pending:
+                    _isPathVisible.Value = PathVisibleStatus.No;
                     break;
-                case Status.Point1:
-                    _lineRenderer.enabled = false;
-                    pathStartObject.SetActive(true);
-                    pathEndObject.SetActive(false);
+                case PathStatus.Point1:
+                    _isPathVisible.Value = PathVisibleStatus.No;
                     pathStartObject.transform.position = GetGlobalPosition(_startingPoint);
                     break;
-                case Status.Point2:
-                    pathEndObject.SetActive(true);
+                case PathStatus.Point2:
                     pathEndObject.transform.position = GetGlobalPosition(_endPoint);
+                    var stopWatch = new Stopwatch();
+                    stopWatch.Start();
                     var path = _pathFinder.CalculatePath(_startingPoint, _endPoint);
-                    //Debug.Break();
+                    stopWatch.Stop();
+
                     if (path == null || path.Count == 0)
                     {
                         _mapErrorPublisher.Publish(new MapError(MapError.ErrorType.PathNotFound));
-                        SetNextStatus(Status.Pending);
+                        SetNextStatus(PathStatus.Pending);
                     }
                     else
                     {
+                        _messenger.Publish(
+                            new VisualMessage($"Path found in {stopWatch.ElapsedMilliseconds} milliseconds"));
                         UpdateLineRenderer(path);
                     }
 
@@ -124,17 +131,21 @@ namespace Controllers
             }
         }
 
-        private UniTask UpdatePathFinding(IMapData mapData)
+        private UniTask UpdatePathFinding(bool _)
         {
-            if (mapData is not RawMapData data) return UniTask.CompletedTask;
-            _pathFinder = new ThetaStarOptimised(data.Map);
-            SetNextStatus(Status.Pending);
+            if (_mapData.Value is not RawMapData data) return UniTask.CompletedTask;
+
+            if (_pathFindingType.Value == PathFindingType.Fast)
+                _pathFinder = new ThetaStarOptimised(data.Map);
+            else
+                _pathFinder = new ThetaStar(data.Map);
+            SetNextStatus(PathStatus.Pending);
             return UniTask.CompletedTask;
         }
 
         private void UpdateLineRenderer(List<Vector2Int> path)
         {
-            _lineRenderer.enabled = true;
+            _isPathVisible.Value = PathVisibleStatus.Yes;
             _lineRenderer.positionCount = path.Count;
             _lineRenderer.widthMultiplier = 0.1f;
             _lineRenderer.SetPositions(path.Select(GetGlobalPosition).ToArray());
@@ -145,7 +156,7 @@ namespace Controllers
             return _camera.ScreenToWorldPoint(new Vector3(vector.x, vector.y, 5f));
         }
 
-        private enum Status
+        private enum PathStatus
         {
             Pending,
             Point1,

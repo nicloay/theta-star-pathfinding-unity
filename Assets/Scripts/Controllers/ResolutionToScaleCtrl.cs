@@ -8,7 +8,8 @@ namespace Controllers
 {
     public class ResolutionToScaleCtrl : MonoBehaviour
     {
-        [Inject] [UsedImplicitly]
+        [Inject]
+        [UsedImplicitly]
         private void InjectResolution(IAsyncReactiveProperty<Resolution> resolution)
         {
             resolution.BindToScale(transform, this.GetCancellationTokenOnDestroy());

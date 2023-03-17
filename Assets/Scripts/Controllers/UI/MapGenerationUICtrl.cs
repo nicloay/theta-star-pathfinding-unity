@@ -12,21 +12,20 @@ namespace Controllers.UI
 {
     public class MapGenerationUICtrl : MonoBehaviour
     {
+        [SerializeField] private GameObject _mainContainer;
+        [SerializeField] private Scrollbar _progressBar;
+        [SerializeField] private TextMeshProUGUI _progressText;
 
         [Inject] [UsedImplicitly] private IReadOnlyAsyncReactiveProperty<GameState> _gameState;
         [Inject] [UsedImplicitly] private LevelGenerationProgress _progress;
 
-        [SerializeField] private GameObject _mainContainer;
-        [SerializeField] private Scrollbar _progressBar;
-        [SerializeField] private TextMeshProUGUI _progressText;
-        
-        
+
         private void Awake()
         {
             var token = this.GetCancellationTokenOnDestroy();
             _gameState.Select(state =>
             {
-                Debug.Log("new state = "+state);
+                Debug.Log("new state = " + state);
                 return state == GameState.MagGeneration;
             }).BindToActivity(_mainContainer, token);
             _progress.Progress.BindToSize(_progressBar, token);

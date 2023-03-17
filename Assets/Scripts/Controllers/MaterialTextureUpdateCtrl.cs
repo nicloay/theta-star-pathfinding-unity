@@ -20,5 +20,4 @@ namespace Controllers
             _mapData.BindMapDataToMainTex(renderer, this.GetCancellationTokenOnDestroy());
         }
     }
-    
 }

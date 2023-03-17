@@ -4,25 +4,23 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 
 [assembly: InternalsVisibleTo("PathFinder.Tests")]
+
 namespace Utils
 {
     public class PriorityQueue
     {
-        
-        private readonly OrderedDictionary _orderedDictionary = new();
+        internal OrderedDictionary OrderedDictionary { get; } = new();
 
-        internal OrderedDictionary OrderedDictionary => _orderedDictionary;
-        
-        public int Count => _orderedDictionary.Count;
+        public int Count => OrderedDictionary.Count;
 
         public bool Contains(Vector2Int key)
         {
-            return _orderedDictionary.Contains(key);
+            return OrderedDictionary.Contains(key);
         }
 
         public void Clear()
         {
-            _orderedDictionary.Clear();
+            OrderedDictionary.Clear();
         }
 
         /// <summary>
@@ -38,21 +36,21 @@ namespace Utils
         /// <param name="priority"></param>
         public void Enqueue(Vector2Int vector, float priority)
         {
-            var insertPosition = _orderedDictionary.BinarySearchValues(priority);
+            var insertPosition = OrderedDictionary.BinarySearchValues(priority);
             if (insertPosition < 0) insertPosition = ~insertPosition; // ~- invert (*-1)
-            _orderedDictionary.Insert(insertPosition, vector, priority);
+            OrderedDictionary.Insert(insertPosition, vector, priority);
         }
 
-        public Vector2Int Dequeue() 
+        public Vector2Int Dequeue()
         {
-            var key = _orderedDictionary.Keys.OfType<Vector2Int>().FirstOrDefault();
-            _orderedDictionary.RemoveAt(0);
+            var key = OrderedDictionary.Keys.OfType<Vector2Int>().FirstOrDefault();
+            OrderedDictionary.RemoveAt(0);
             return key;
         }
 
         public void Remove(Vector2Int neighbour)
         {
-            _orderedDictionary.Remove(neighbour);
+            OrderedDictionary.Remove(neighbour);
         }
     }
 }

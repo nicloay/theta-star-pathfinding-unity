@@ -8,13 +8,23 @@ using VContainer.Unity;
 
 namespace Services
 {
+    /// <summary>
+    ///     Monitor screen size change, and update appropriate async reactive property
+    /// </summary>
     [UsedImplicitly]
     public class ScreenSizeMonitor : IStartable, ITickable, IDisposable
     {
         private const int DEBOUNCING_TIMEOUT_MS = 500;
         [Inject] [UsedImplicitly] private readonly IAsyncReactiveProperty<Resolution> _resolution;
+
+        private CancellationTokenSource _ctx;
         private int _previousHeight;
         private int _previousWidth;
+
+        public void Dispose()
+        {
+            _ctx?.Dispose();
+        }
 
         public void Start()
         {
@@ -23,15 +33,14 @@ namespace Services
             SetWidthHeight();
         }
 
-        private CancellationTokenSource _ctx;
         public void Tick()
         {
             if (Screen.width == _previousWidth &&
                 Screen.height == _previousHeight) return;
-            
+
             _previousWidth = Screen.width;
             _previousHeight = Screen.height;
-            
+
             _ctx?.Cancel();
             _ctx = new CancellationTokenSource();
             UpdateWithDelay(_ctx.Token).Forget();
@@ -39,11 +48,8 @@ namespace Services
 
         private async UniTaskVoid UpdateWithDelay(CancellationToken token)
         {
-            await UniTask.Delay(DEBOUNCING_TIMEOUT_MS, cancellationToken:token);
-            if (token.IsCancellationRequested)
-            {
-                return;
-            }
+            await UniTask.Delay(DEBOUNCING_TIMEOUT_MS, cancellationToken: token);
+            if (token.IsCancellationRequested) return;
             SetWidthHeight();
             _ctx = null;
         }
@@ -54,11 +60,6 @@ namespace Services
             {
                 width = _previousWidth, height = _previousHeight
             };
-        }
-
-        public void Dispose()
-        {
-            _ctx?.Dispose();
         }
     }
 }

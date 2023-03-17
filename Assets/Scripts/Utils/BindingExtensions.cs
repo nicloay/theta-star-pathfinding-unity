@@ -9,7 +9,17 @@ namespace Utils
 {
     public static class BindingExtensions
     {
-        
+        public static void BindToEnableStatus(this IUniTaskAsyncEnumerable<bool> source, Renderer renderer,
+            CancellationToken cancellationToken, bool rebindOnError = true)
+        {
+            void Setter(bool value)
+            {
+                renderer.enabled = value;
+            }
+
+            BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
+        }
+
         public static void BindToSize(this IUniTaskAsyncEnumerable<float> source, Scrollbar scrollbar,
             CancellationToken cancellationToken, bool rebindOnError = true)
         {
@@ -20,7 +30,7 @@ namespace Utils
 
             BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
         }
-        
+
         public static void BindToActivity(this IUniTaskAsyncEnumerable<bool> source, GameObject gameObject,
             CancellationToken cancellationToken, bool rebindOnError = true)
         {
@@ -31,16 +41,13 @@ namespace Utils
 
             BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
         }
-        
+
         public static void BindMapDataToMainTex(this IUniTaskAsyncEnumerable<IMapData> source, Renderer target,
             CancellationToken cancellationToken, bool rebindOnError = true)
         {
             void Setter(IMapData value)
             {
-                if (value is RawMapData data)
-                {
-                    target.material.mainTexture = data.GetTexture();
-                }
+                if (value is RawMapData data) target.material.mainTexture = data.GetTexture();
             }
 
             BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();

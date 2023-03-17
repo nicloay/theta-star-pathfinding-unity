@@ -4,9 +4,10 @@ using UnityEngine;
 
 public class TestReactiveProperty : MonoBehaviour
 {
-    private AsyncReactiveProperty<int> width = new AsyncReactiveProperty<int>(100);
+    private readonly AsyncReactiveProperty<int> width = new(100);
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         width.ForEachAwaitAsync(async i =>
         {
@@ -15,12 +16,9 @@ public class TestReactiveProperty : MonoBehaviour
         });
     }
 
-    
-    void Update()
+
+    private void Update()
     {
-        if (Screen.width != width.Value)
-        {
-            width.Value = Screen.width;
-        }
+        if (Screen.width != width.Value) width.Value = Screen.width;
     }
 }

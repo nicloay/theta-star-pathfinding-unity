@@ -5,7 +5,7 @@ using Utils;
 
 namespace Pathfinding
 {
-    public class ThetaStar
+    public class ThetaStar : IPathFinder
     {
         private static readonly Vector2Int UNKNOWN = new(-1, -1);
         private readonly HashSet<Vector2Int> _closedQueue;
@@ -15,7 +15,7 @@ namespace Pathfinding
 
         private readonly bool[,] _map;
 
-        private readonly PriorityQueue _openQueue; 
+        private readonly PriorityQueue _openQueue;
         private readonly Vector2Int[,] _parent; // [x,y]
         private readonly int _width;
         private Vector2Int _end;
@@ -31,14 +31,9 @@ namespace Pathfinding
             _closedQueue = new HashSet<Vector2Int>();
         }
 
-        public bool IsPassable(Vector2Int position) => _map[position.x, position.y];
-
-        private void ResetCache()
+        public bool IsPassable(Vector2Int position)
         {
-            Array.Clear(_gScore, 0, _gScore.Length);
-            Array.Clear(_parent, 0, _parent.Length);
-            _openQueue.Clear();
-            _closedQueue.Clear();
+            return _map[position.x, position.y];
         }
 
         /// <summary>
@@ -82,6 +77,14 @@ namespace Pathfinding
             return null;
         }
 
+        private void ResetCache()
+        {
+            Array.Clear(_gScore, 0, _gScore.Length);
+            Array.Clear(_parent, 0, _parent.Length);
+            _openQueue.Clear();
+            _closedQueue.Clear();
+        }
+
         private void UpdateVertex(Vector2Int s, Vector2Int neighbour)
         {
             if (HasLineOfSight(_parent[s.x, s.y], neighbour))
@@ -94,7 +97,7 @@ namespace Pathfinding
                 _parent[neighbour.x, neighbour.y] = parentPosition;
 
                 if (_openQueue.Contains(neighbour)) _openQueue.Remove(neighbour);
-                
+
                 _openQueue.Enqueue(neighbour,
                     _gScore[neighbour.x, neighbour.y] + (neighbour - _end).magnitude);
             }
@@ -112,7 +115,7 @@ namespace Pathfinding
 
         // If has Line of Sight - return distance, otherwise -1
         // copy-pasta from last section of https://news.movel.ai/theta-star
-        private bool HasLineOfSight(Vector2Int s, Vector2Int s2) 
+        private bool HasLineOfSight(Vector2Int s, Vector2Int s2)
         {
             var x0 = s.x;
             var y0 = s.y;
@@ -200,6 +203,7 @@ namespace Pathfinding
                 result.Add(s);
                 s = _parent[s.x, s.y];
             }
+
             result.Add(_parent[s.x, s.y]);
             return result;
         }
