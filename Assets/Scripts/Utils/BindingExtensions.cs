@@ -9,6 +9,17 @@ namespace Utils
 {
     public static class BindingExtensions
     {
+        public static void BindToEnableStatus(this IUniTaskAsyncEnumerable<bool> source, MonoBehaviour monoBehaviour,
+            CancellationToken cancellationToken, bool rebindOnError = true)
+        {
+            void Setter(bool value)
+            {
+                monoBehaviour.enabled = value;
+            }
+
+            BindToCore(source, Setter, cancellationToken, rebindOnError).Forget();
+        }
+
         public static void BindToEnableStatus(this IUniTaskAsyncEnumerable<bool> source, Renderer renderer,
             CancellationToken cancellationToken, bool rebindOnError = true)
         {

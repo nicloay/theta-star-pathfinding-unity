@@ -13,14 +13,13 @@ namespace Controllers.UI
         [SerializeField] private GameObject hintText;
         [SerializeField] private Button runTestButton;
 
-        [UsedImplicitly] [Inject] private IReadOnlyAsyncReactiveProperty<PathVisibleStatus> _pathVisible;
+        [Inject] [UsedImplicitly] private IAsyncReactiveProperty<IPathInputState> _inputState;
 
-        private void Awake()
-        {
+        private void Awake(){
             var token = this.GetCancellationTokenOnDestroy();
-            _pathVisible.Select(status => status == PathVisibleStatus.Yes)
+            _inputState.Select(status => status is InputBothPointsSet)
                 .BindToActivity(runTestButton.gameObject, token);
-            _pathVisible.Select(status => status == PathVisibleStatus.No).BindToActivity(hintText.gameObject, token);
+            _inputState.Select(status => status is not InputBothPointsSet).BindToActivity(hintText.gameObject, token);
         }
     }
 }

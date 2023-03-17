@@ -23,6 +23,11 @@ namespace MapGenerator.MapData
             Map = map;
         }
 
+        public bool IsPassable(Vector2Int position)
+        {
+            return Map[position.x, position.y];
+        }
+
         public static async UniTask<RawMapData> Create(int width, int height, IProgress<float> progress,
             CancellationToken token)
         {

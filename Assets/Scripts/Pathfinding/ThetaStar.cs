@@ -31,11 +31,6 @@ namespace Pathfinding
             _closedQueue = new HashSet<Vector2Int>();
         }
 
-        public bool IsPassable(Vector2Int position)
-        {
-            return _map[position.x, position.y];
-        }
-
         /// <summary>
         ///     Theta star pathfinding implementation,
         ///     <see>

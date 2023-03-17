@@ -22,6 +22,7 @@ public class SceneScope : LifetimeScope
         RegisterMessagePipe(builder);
 
         builder.RegisterComponentInHierarchy<EventSystem>(); // this component can be injected anywhere
+        builder.RegisterComponentInHierarchy<MapCameraCtrl>(); 
         builder.RegisterInstance(new LevelGenerationProgress());
 
         base.Configure(builder);
@@ -46,6 +47,8 @@ public class SceneScope : LifetimeScope
         InjectToComponents<ErrorHandlerUICtrl>(builder);
         InjectToComponents<VisualLoggerUICtrl>(builder);
         InjectToComponents<RunTestUIController>(builder);
+        InjectToComponents<PathInputController>(builder);
+        InjectToComponents<StartEndPointCtrl>(builder);
     }
 
 
@@ -69,7 +72,7 @@ public class SceneScope : LifetimeScope
         RegisterReactiveProperty(builder, PathFindingType.Fast);
         RegisterReactiveProperty(builder, GameState.Unknown);
         RegisterReactiveProperty(builder, new Resolution { height = Screen.height, width = Screen.width });
-        RegisterReactiveProperty(builder, PathVisibleStatus.No);
+        RegisterReactiveProperty<IPathInputState>(builder, new InputIdle());
     }
 
     private static void RegisterReactiveProperty<T>(IContainerBuilder builder, T value)
