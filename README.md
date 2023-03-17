@@ -9,6 +9,7 @@ The following resources were used in this project:
 * [VContainer](vcontainer.hadashikick.jp/) for Dependency Injection.
 * [Unitask](https://github.com/Cysharp/UniTask) for Model-View-ViewModel (MVVM) architecture (binding data model to UI components) and for handling async tasks.
 * [MessagePipe](https://github.com/Cysharp/MessagePipe) for decoupling and sending messages from one object to another.
+* [DoTween](https://dotween.demigiant.com/)
 
 # Tests
 To build a path between two points, click twice on the screen. 
